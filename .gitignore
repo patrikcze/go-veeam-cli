@@ -43,3 +43,5 @@ go-veeam-cli
 # OS generated files
 .DS_Store
 Thumbs.db
+
+.token.json

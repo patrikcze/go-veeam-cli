@@ -10,6 +10,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	servername string
+	port       int
+)
+
 // authenticateCmd represents the authenticate command
 var authenticateCmd = &cobra.Command{
 	Use:   "authenticate",
@@ -37,6 +42,9 @@ var authenticateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(authenticateCmd)
+
+	rootCmd.PersistentFlags().StringVar(&servername, "servername", "", "Veeam B&R server name")
+	rootCmd.PersistentFlags().IntVar(&port, "port", 9419, "Veeam B&R server port")
 
 	authenticateCmd.Flags().String("username", "", "Your Veeam B&R username.")
 	authenticateCmd.Flags().String("password", "", "Your Veeam B&R password.")

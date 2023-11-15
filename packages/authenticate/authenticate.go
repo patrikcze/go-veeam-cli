@@ -1,6 +1,7 @@
 package veeamauthenticate
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -83,6 +84,8 @@ func saveTokenToStorage(token *TokenResponse) error {
 }
 
 func obtainAccessToken(servername, username, password string, port int) (*TokenResponse, error) {
+	// Before making the HTTP request, disable certificate verification
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	reqURL := fmt.Sprintf("https://%s:%d/api/oauth2/token", servername, port)
 	data := url.Values{}
 	data.Set("grant_type", "password")
