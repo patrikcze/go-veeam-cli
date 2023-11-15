@@ -44,4 +44,6 @@ go-veeam-cli
 .DS_Store
 Thumbs.db
 
+# Avoid sharing token
 .token.json
+token.json
