@@ -12,7 +12,7 @@ type ServerTimeResponse struct {
 	TimeZone   string `json:"timeZone"`
 }
 
-func GetServerTime(servername string, port int) string {
+func GetServerTime(servername string, port int) (string, error) {
   tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -21,20 +21,20 @@ func GetServerTime(servername string, port int) string {
 	reqUrl := fmt.Sprintf("https://%s:%d/api/v1/serverTime", servername, port)
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if err != nil {
-		panic(err)
+		return "",err
 	}
 	req.Header.Add("x-api-version", "1.1-rev0")
 
 	res, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return string(body)
+	return string(body), nil
 }

@@ -14,17 +14,22 @@ import (
 var servertimeCmd = &cobra.Command{
 	Use:   "servertime",
 	Short: "This command allows you to get current date and time on the backup server.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Will try to get information about current time and timezone directly from remote server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		apiservername, _ := cmd.Flags().GetString("servername")
 		apiport, _ := cmd.Flags().GetInt("port")
-		stime := veeamtime.GetServerTime(apiservername, apiport)
+		if apiservername == "" || apiport == 0 {
+			fmt.Errorf("Server name and port are required!")
+			cmd.Help()
+			return
+		}
+		stime, err := veeamtime.GetServerTime(apiservername, apiport)
+		if err != nil{
+			fmt.Println("Error:", err)
+			return
+		}
 		fmt.Println(stime)
+
 	},
 }
 

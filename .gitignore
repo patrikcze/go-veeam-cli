@@ -1,0 +1,45 @@
+go-veeam-cli
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Compiled Go packages
+*.pkg
+*.exe
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go binary
+/bin/
+
+# Go executables
+*.exe
+
+# Go test cache and test results
+*.test
+/.cache
+
+# Go build cache
+/.buildcache
+
+# Go mod cache
+/.gomodcache
+
+# Generated files
+*.pb.go
+*.pb.gw.go
+*.swagger.json
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
