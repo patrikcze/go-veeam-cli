@@ -19,29 +19,31 @@ type TokenResponse struct {
 	Expires      string `json:".expires"`
 }
 
-func auth() {
+func Authenticate(servername, username,password string, port int) (*TokenResponse, error) {
 	// Check if the token exists in storage
-	token, err := getTokenFromStorage()
+	token, err := GetTokenFromStorage()
 	if err != nil {
 		// Token does not exist or is invalid, obtain a new one
-		token, err = obtainAccessToken()
+		token, err = obtainAccessToken(servername, username, password, port)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		// Save the token to storage
 		err = saveTokenToStorage(token)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	// Use the token for subsequent API calls
 	// Your code for the "Start Entire VM Restore" REST API call goes here
 	fmt.Println(token.AccessToken)
+	
+	return token, nil
 }
 
-func getTokenFromStorage() (*TokenResponse, error) {
+func GetTokenFromStorage() (*TokenResponse, error) {
 	// Read the token from storage (e.g., file, secure storage)
 	// Implement your own logic to retrieve the token securely
 	// For demonstration purposes, we'll assume the token is stored in a file named "token.json"
@@ -80,12 +82,12 @@ func saveTokenToStorage(token *TokenResponse) error {
 	return nil
 }
 
-func obtainAccessToken() (*TokenResponse, error) {
-	reqURL := "https://cdn.veeam.com/api/oauth2/token"
+func obtainAccessToken(servername, username, password string, port int) (*TokenResponse, error) {
+	reqURL := fmt.Sprintf("https://%s:%d/api/oauth2/token", servername, port)
 	data := url.Values{}
 	data.Set("grant_type", "password")
-	data.Set("username", "string")
-	data.Set("password", "pa$$word")
+	data.Set("username", username)
+	data.Set("password", password)
 	data.Set("refresh_token", "string")
 	data.Set("code", "string")
 	data.Set("use_short_term_refresh", "true")
