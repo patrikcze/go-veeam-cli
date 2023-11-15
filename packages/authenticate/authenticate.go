@@ -38,8 +38,7 @@ func Authenticate(servername, username,password string, port int) (*TokenRespons
 	}
 
 	// Use the token for subsequent API calls
-	// Your code for the "Start Entire VM Restore" REST API call goes here
-	fmt.Println(token.AccessToken)
+	// fmt.Println(token.AccessToken)
 	
 	return token, nil
 }
@@ -63,7 +62,7 @@ func GetTokenFromStorage() (*TokenResponse, error) {
 
 	return &token, nil
 }
-
+// This function saves gathered RestAPI Token into JSON File.
 func saveTokenToStorage(token *TokenResponse) error {
 	// Marshal the token into JSON data
 	data, err := json.Marshal(token)
@@ -82,12 +81,12 @@ func saveTokenToStorage(token *TokenResponse) error {
 
 	return nil
 }
-
+// Function will Obtain Authorization Token from Veeam B&R RestAPI call for provided user and password!
 func obtainAccessToken(servername, username, password string, port int) (*TokenResponse, error) {
 	// Before making the HTTP request, disable certificate verification
 	// Please note that this approach should only be used for testing or development purposes.
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	
+
 	reqURL := fmt.Sprintf("https://%s:%d/api/oauth2/token", servername, port)
 	data := url.Values{}
 	data.Set("grant_type", "password")
