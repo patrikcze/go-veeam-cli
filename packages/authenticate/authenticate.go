@@ -85,7 +85,9 @@ func saveTokenToStorage(token *TokenResponse) error {
 
 func obtainAccessToken(servername, username, password string, port int) (*TokenResponse, error) {
 	// Before making the HTTP request, disable certificate verification
+	// Please note that this approach should only be used for testing or development purposes.
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	
 	reqURL := fmt.Sprintf("https://%s:%d/api/oauth2/token", servername, port)
 	data := url.Values{}
 	data.Set("grant_type", "password")
