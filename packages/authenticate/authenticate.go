@@ -4,11 +4,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/patrikcze/go-veeam-cli/packages/encryption"
 )
 
 type TokenResponse struct {
@@ -20,9 +23,9 @@ type TokenResponse struct {
 	Expires      string `json:".expires"`
 }
 
-func Authenticate(servername, username,password string, port int) (*TokenResponse, error) {
+func Authenticate(servername, username, password string, port int, key []byte) (*TokenResponse, error) {
 	// Check if the token exists in storage
-	token, err := GetTokenFromStorage()
+	token, err := GetTokenFromStorage(key)
 	if err != nil {
 		// Token does not exist or is invalid, obtain a new one
 		token, err = obtainAccessToken(servername, username, password, port)
@@ -31,7 +34,7 @@ func Authenticate(servername, username,password string, port int) (*TokenRespons
 		}
 
 		// Save the token to storage
-		err = saveTokenToStorage(token)
+		err = saveTokenToStorage(token, key)
 		if err != nil {
 			return nil, err
 		}
@@ -39,16 +42,20 @@ func Authenticate(servername, username,password string, port int) (*TokenRespons
 
 	// Use the token for subsequent API calls
 	// fmt.Println(token.AccessToken)
-	
+
 	return token, nil
 }
 
-func GetTokenFromStorage() (*TokenResponse, error) {
-	// Read the token from storage (e.g., file, secure storage)
-	// Implement your own logic to retrieve the token securely
-	// For demonstration purposes, we'll assume the token is stored in a file named "token.json"
+func GetTokenFromStorage(key []byte) (*TokenResponse, error) {
+	// Read the encrypted token from storage
 	filePath := "token.json"
-	data, err := ioutil.ReadFile(filePath)
+	encryptedData, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decrypt the token
+	data, err := encryption.Decrypt(encryptedData, key)
 	if err != nil {
 		return nil, err
 	}
@@ -62,25 +69,31 @@ func GetTokenFromStorage() (*TokenResponse, error) {
 
 	return &token, nil
 }
+
 // This function saves gathered RestAPI Token into JSON File.
-func saveTokenToStorage(token *TokenResponse) error {
+func saveTokenToStorage(token *TokenResponse, key []byte) error {
 	// Marshal the token into JSON data
 	data, err := json.Marshal(token)
 	if err != nil {
 		return err
 	}
 
-	// Write the token data to storage (e.g., file, secure storage)
-	// Implement your own logic to store the token securely
-	// For demonstration purposes, we'll assume the token is stored in a file named "token.json"
+	// Encrypt the token
+	encryptedData, err := encryption.Encrypt(data, key)
+	if err != nil {
+		return err
+	}
+
+	// Write the encrypted token data to storage
 	filePath := "token.json"
-	err = ioutil.WriteFile(filePath, data, 0644)
+	err = os.WriteFile(filePath, encryptedData, 0644)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
+
 // Function will Obtain Authorization Token from Veeam B&R RestAPI call for provided user and password!
 func obtainAccessToken(servername, username, password string, port int) (*TokenResponse, error) {
 	// Before making the HTTP request, disable certificate verification
@@ -108,7 +121,7 @@ func obtainAccessToken(servername, username, password string, port int) (*TokenR
 		return nil, err
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
