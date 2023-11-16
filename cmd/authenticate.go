@@ -1,12 +1,15 @@
 /*
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"crypto/rand"
 	"fmt"
-	"github.com/patrikcze/go-veeam-cli/packages/authenticate"
+	"log"
+	"os"
+
+	veeamauthenticate "github.com/patrikcze/go-veeam-cli/packages/authenticate"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +22,7 @@ var (
 var authenticateCmd = &cobra.Command{
 	Use:   "authenticate",
 	Short: "Authenticate with the Veeam B&R RestAPI",
-	Long: `This command allows you to authenticate with the Veeam B&R RestAPI using your username and password.`,
+	Long:  `This command allows you to authenticate with the Veeam B&R RestAPI using your username and password.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		username, _ := cmd.Flags().GetString("username")
 		password, _ := cmd.Flags().GetString("password")
@@ -29,7 +32,17 @@ var authenticateCmd = &cobra.Command{
 			return
 		}
 
-		token, err := veeamauthenticate.Authenticate(servername, username, password, port)
+		// generate a random key for encryption
+		key := make([]byte, 32) // generates a random 32-byte key for AES-256
+		if _, err := rand.Read(key); err != nil {
+			log.Fatal(err)
+		}
+
+		// Store random key into Environment variable to be able to decrypt.
+		os.Setenv("TOKEN_ENCRYPTION_KEY", string(key))
+
+		// pass the key to the Authenticate function
+		token, err := veeamauthenticate.Authenticate(servername, username, password, port, key)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
